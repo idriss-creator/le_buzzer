@@ -49,62 +49,60 @@
 <body>
     <h1>Quiz - Buzzer</h1>
     <div class="container">
-        <button class="button" id="team1" onclick="buzz('Équipe 1')">Buzz !</button>
+        <button class="button" id="buzzerButton" onclick="buzz()">Buzz !</button>
     </div>
     <h2 id="winner"></h2>
     <button class="button" onclick="resetBuzzer()" style="background: #007bff;">Réinitialiser</button>
     
     <audio id="buzzerSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
     <audio id="clickSound" src="https://www.soundjay.com/button/button-16.mp3"></audio>
-    
-    <script src="/socket.io/socket.io.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+
     <script>
-        const socket = io(); // Connexion au serveur Socket.io
+        const socket = io(); // Connexion au serveur
         let hasBuzzed = false;
-        
-        function buzz(team) {
+        let teamName = prompt("Entrez le nom de votre équipe :") || "Équipe anonyme";
+
+        // Envoyer le nom de l'équipe au serveur
+        socket.emit("join", teamName);
+
+        function buzz() {
             if (!hasBuzzed) {
-                socket.emit("buzz"); // Signaler que l'équipe a buzzé
-                
-                let buzzerSound = document.getElementById("buzzerSound");
-                let clickSound = document.getElementById("clickSound");
-                buzzerSound.play();
-                clickSound.play();
-                
-                document.getElementById("winner").innerText = team + " a buzzé !";
+                socket.emit("buzz");
+
+                document.getElementById("buzzerSound").play();
+                document.getElementById("clickSound").play();
+
+                document.getElementById("winner").innerText = `${teamName} a buzzé !`;
                 hasBuzzed = true;
                 disableButtons();
             }
         }
-        
+
         function disableButtons() {
-            document.querySelectorAll(".button").forEach(button => {
-                button.classList.add("disabled");
-                button.disabled = true;
-            });
+            document.getElementById("buzzerButton").classList.add("disabled");
+            document.getElementById("buzzerButton").disabled = true;
         }
-        
+
         function resetBuzzer() {
             hasBuzzed = false;
             document.getElementById("winner").innerText = "";
-            document.querySelectorAll(".button").forEach(button => {
-                button.classList.remove("disabled");
-                button.disabled = false;
-            });
+            document.getElementById("buzzerButton").classList.remove("disabled");
+            document.getElementById("buzzerButton").disabled = false;
+            socket.emit("reset");
         }
 
-        // Recevoir l'événement winner du serveur
+        // Réception des événements du serveur
         socket.on("winner", (message) => {
             document.getElementById("winner").innerText = message;
             disableButtons();
         });
 
-        // Réinitialiser le buzzer (manuellement ou après un délai)
         socket.on("reset", () => {
             resetBuzzer();
         });
 
-        // Verrouiller les boutons de buzzers (après qu'une équipe ait buzzé)
         socket.on("lock", () => {
             disableButtons();
         });
