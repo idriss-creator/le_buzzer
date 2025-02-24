@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzzer Quiz</title>
+    <style>
+        body { 
+            text-align: center; 
+            font-family: Arial, sans-serif; 
+            background-color: #282c34; 
+            color: white; 
+        }
+        .container { 
+            margin-top: 50px; 
+        }
+        .button { 
+            font-size: 24px; 
+            padding: 20px 40px; 
+            margin: 20px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 10px; 
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 65, 108, 0.8);
+        }
+        .button:active {
+            transform: scale(0.9);
+        }
+        .disabled { 
+            background-color: grey; 
+            cursor: not-allowed; 
+            box-shadow: none; 
+        }
+        #winner { 
+            font-size: 30px; 
+            font-weight: bold; 
+            margin-top: 20px; 
+            color: #ffcc00; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz - Buzzer</h1>
+    <div class="container">
+        <button class="button" id="team1" onclick="buzz('Équipe 1')">Buzz !</button>
+    </div>
+    <h2 id="winner"></h2>
+    <button class="button" onclick="resetBuzzer()" style="background: #007bff;">Réinitialiser</button>
+    
+    <audio id="buzzerSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+    <audio id="clickSound" src="https://www.soundjay.com/button/button-16.mp3"></audio>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io(); // Connexion au serveur Socket.io
+        let hasBuzzed = false;
+        
+        function buzz(team) {
+            if (!hasBuzzed) {
+                socket.emit("buzz"); // Signaler que l'équipe a buzzé
+                
+                let buzzerSound = document.getElementById("buzzerSound");
+                let clickSound = document.getElementById("clickSound");
+                buzzerSound.play();
+                clickSound.play();
+                
+                document.getElementById("winner").innerText = team + " a buzzé !";
+                hasBuzzed = true;
+                disableButtons();
+            }
+        }
+        
+        function disableButtons() {
+            document.querySelectorAll(".button").forEach(button => {
+                button.classList.add("disabled");
+                button.disabled = true;
+            });
+        }
+        
+        function resetBuzzer() {
+            hasBuzzed = false;
+            document.getElementById("winner").innerText = "";
+            document.querySelectorAll(".button").forEach(button => {
+                button.classList.remove("disabled");
+                button.disabled = false;
+            });
+        }
+
+        // Recevoir l'événement winner du serveur
+        socket.on("winner", (message) => {
+            document.getElementById("winner").innerText = message;
+            disableButtons();
+        });
+
+        // Réinitialiser le buzzer (manuellement ou après un délai)
+        socket.on("reset", () => {
+            resetBuzzer();
+        });
+
+        // Verrouiller les boutons de buzzers (après qu'une équipe ait buzzé)
+        socket.on("lock", () => {
+            disableButtons();
+        });
+    </script>
+</body>
+</html>

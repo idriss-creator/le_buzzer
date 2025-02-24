@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzzer Quiz</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #ff6b6b, #556270);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .button {
+            font-size: 24px;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            background: white;
+            color: black;
+            font-weight: bold;
+        }
+        .button:hover {
+            transform: scale(1.1);
+            background: yellow;
+        }
+        .disabled {
+            background: grey;
+            cursor: not-allowed;
+        }
+        #winner {
+            font-size: 30px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #timer {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .reset {
+            margin-top: 20px;
+            font-size: 20px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            background: #ffcc00;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .reset:hover {
+            background: #ff9900;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz - Buzzer</h1>
+    <h2 id="timer">Temps : 0.00s</h2>
+    <button class="button" id="buzzer" onclick="buzz()">BUZZER</button>
+    <h2 id="winner"></h2>
+    <button class="reset" onclick="resetBuzzer()">Réinitialiser</button>
+    
+    <audio id="buzzerSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+    
+    <script>
+        let hasBuzzed = false;
+        let startTime;
+        let teamName = prompt("Entrez le nom de votre équipe :", "Équipe 1");
+        
+        function startTimer() {
+            startTime = performance.now();
+            requestAnimationFrame(updateTimer);
+        }
+        
+        function updateTimer() {
+            if (!hasBuzzed) {
+                let elapsedTime = (performance.now() - startTime) / 1000;
+                document.getElementById("timer").innerText = "Temps : " + elapsedTime.toFixed(2) + "s";
+                requestAnimationFrame(updateTimer);
+            }
+        }
+        
+        function buzz() {
+            if (!hasBuzzed) {
+                let buzzerSound = document.getElementById("buzzerSound");
+                buzzerSound.play();
+                
+                let elapsedTime = (performance.now() - startTime) / 1000;
+                document.getElementById("winner").innerText = teamName + " a buzzé en " + elapsedTime.toFixed(2) + "s !";
+                hasBuzzed = true;
+                disableButton();
+            }
+        }
+        
+        function disableButton() {
+            document.getElementById("buzzer").classList.add("disabled");
+            document.getElementById("buzzer").disabled = true;
+        }
+        
+        function resetBuzzer() {
+            hasBuzzed = false;
+            document.getElementById("winner").innerText = "";
+            document.getElementById("buzzer").classList.remove("disabled");
+            document.getElementById("buzzer").disabled = false;
+            document.getElementById("timer").innerText = "Temps : 0.00s";
+            startTimer();
+        }
+        
+        startTimer();
+    </script>
+</body>
+</html>
