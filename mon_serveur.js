@@ -7,49 +7,57 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-let buzzedTeam = null; // Stocke l'équipe qui a buzzé
-let canBuzz = true; // Contrôle si les équipes peuvent buzzer
+let buzzedTeam = null;
+let canBuzz = true;
+let teams = {};
 
-// Servir le fichier HTML
+app.use(express.static(path.join(__dirname, "public")));
+
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "mon_buzzer.html"));
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Gérer les connexions des clients
 io.on("connection", (socket) => {
+    
     console.log(`Nouvelle connexion : ${socket.id}`);
 
     socket.on("join", (teamName) => {
-        socket.teamName = teamName || `Équipe ${socket.id.substring(0, 5)}`;
-        console.log(`${socket.teamName} s'est connecté.`);
+        
+        teams[socket.id] = teamName || `Équipe ${socket.id.substring(0, 5)}`;
+
+        console.log(`${teams[socket.id]} s'est connecté.`);
     });
 
     socket.on("buzz", () => {
         if (canBuzz && !buzzedTeam) {
-            buzzedTeam = socket.teamName || `Équipe ${socket.id.substring(0, 5)}`;
-            canBuzz = false; // Désactiver le buzzer
+            buzzedTeam = teams[socket.id] || `Équipe ${socket.id.substring(0, 5)}`;
+            canBuzz = false;
 
-            io.emit("lock"); // Bloquer les buzzers
-            io.emit("winner", `Le gagnant est ${buzzedTeam} !`);
+            io.emit("lock"); 
+            io.emit("winner", `Le premier à buzzer est ${buzzedTeam} !`);
             console.log(`${buzzedTeam} a buzzé !`);
 
-            // Réactivation du buzzer après 20 secondes
-            setTimeout(() => {
-                buzzedTeam = null;
-                canBuzz = true;
-                io.emit("reset"); // Débloquer le buzzer
-                console.log("Buzzer réinitialisé après 20 secondes.");
-            }, 3000);
+            let countdown = 5;
+            let countdownInterval = setInterval(() => {
+                io.emit("countdown", countdown);  
+                countdown--;
+
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    buzzedTeam = null;
+                    canBuzz = true;
+                    io.emit("reset");  
+                    console.log("Buzzer réinitialisé.");
+                }
+            }, 1000);
         }
     });
 
-    
-
     socket.on("disconnect", () => {
-        console.log(`${socket.teamName || "Un joueur"} (${socket.id}) s'est déconnecté.`);
+        console.log(`${teams[socket.id] || "Un joueur"} (${socket.id}) s'est déconnecté.`);
+        delete teams[socket.id]; 
     });
 });
 
-// Lancer le serveur
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Serveur lancé sur http://localhost:${PORT}`));

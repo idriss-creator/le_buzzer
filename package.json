@@ -1,0 +1,24 @@
+{
+  "name": "le_buzzer",
+  "version": "1.0.0",
+  "main": "mon_serveur.js",
+  "scripts": {
+    "start": "node mon_serveur.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idriss-creator/le_buzzer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/idriss-creator/le_buzzer/issues"
+  },
+  "homepage": "https://github.com/idriss-creator/le_buzzer#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
