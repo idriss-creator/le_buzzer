@@ -74,12 +74,12 @@
             font-weight: bold;
             color: yellow;
         }
-        /* Ajout du style pour le buzzer vert */
+        
         .buzzer-active {
-            background: linear-gradient(45deg, #28a745, #218838); /* Vert */
+            background: linear-gradient(45deg, #28a745, #218838); 
             box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
         }
-        /* Media queries pour rendre l'interface responsive */
+        
         @media screen and (max-width: 600px) {
             .button {
                 font-size: 18px;
@@ -166,7 +166,7 @@
             document.getElementById("overlayMessage").innerText = message;
 
             let button = document.getElementById("buzzerButton");
-            button.classList.add("buzzer-active"); // Devient vert
+            button.classList.add("buzzer-active"); 
 
             let countdown = 10;  
             const countdownElement = document.getElementById("overlayCountdown");
@@ -177,7 +177,7 @@
                 if (countdown < 0) {
                     clearInterval(countdownInterval);
                     document.getElementById("overlay").style.display = 'none';  
-                    button.classList.remove("buzzer-active"); // Reprend sa couleur normale
+                    button.classList.remove("buzzer-active"); 
                 }
             }, 1000);
         });
